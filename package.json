@@ -1,0 +1,55 @@
+{
+  "name": "spotify-clone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --runInBand",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --runInBand --watch",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules NODE_ENV=test jest --runInBand --coverage",
+    "reconcile:subscriptions": "node src/scripts/reconcileSubscriptions.js",
+    "lint": "eslint .",
+    "dev": "npx nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@imagekit/nodejs": "^7.9.1",
+    "axios": "^1.7.9",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "express-validator": "^7.3.2",
+    "file-type": "^22.0.1",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.5.0",
+    "multer": "^2.1.1",
+    "nodemailer": "^9.0.3",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "rate-limit-mongo": "^2.3.2",
+    "stripe": "^22.2.1",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^9.0.0",
+    "vscode-ripgrep": "^1.13.2"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "eslint": "^9.17.0",
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
+  }
+}

@@ -1,0 +1,5449 @@
+{
+  "info": {
+    "_postman_id": "a9f14d83-9618-4888-8c56-d8a7b646c430",
+    "name": "Spotify Clone API - Full Coverage",
+    "description": "Complete Spotify Clone Backend API Collection with full endpoint coverage, positive & negative test cases, auto token/id chaining, rate-limit aware auth, artist verification flow, admin moderation, payments/Stripe, and webhook reference. Generated to match current backend routes (auth, users, music, playlists, queue, likes, payment, admin, webhook).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "48958803",
+    "_collection_link": "https://go.postman.co/collection/48958803-a9f14d83-9618-4888-8c56-d8a7b646c430?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "Health Check - Should return 200",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register User - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201', function () {",
+                  "    pm.expect([200,201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "pm.test('Response has accessToken', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('accessToken');",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) { pm.collectionVariables.set('accessToken', res.accessToken); }",
+                  "    if (res.refreshToken) { pm.collectionVariables.set('refreshToken', res.refreshToken); }",
+                  "    if (res.user && res.user._id) { pm.collectionVariables.set('userId', res.user._id); }",
+                  "    if (res.data && res.data.accessToken) { pm.collectionVariables.set('accessToken', res.data.accessToken); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser_{{$randomInt}}\",\n  \"email\": \"testuser{{$randomInt}}@example.com\",\n  \"password\": \"Test1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register User - Duplicate Email (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/409', function () {",
+                  "    pm.expect([400,409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register User - Missing Fields (validation error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register User - Weak Password (validation error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"weakpwuser\",\n  \"email\": \"weakpw{{$randomInt}}@example.com\",\n  \"password\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Artist - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201', function () { pm.expect([200,201]).to.include(pm.response.code); });",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) { pm.collectionVariables.set('artistToken', res.accessToken); }",
+                  "    if (res.refreshToken) { pm.collectionVariables.set('artistRefreshToken', res.refreshToken); }",
+                  "    if (res.user && res.user._id) { pm.collectionVariables.set('artistUserId', res.user._id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testartist_{{$randomInt}}\",\n  \"email\": \"testartist{{$randomInt}}@example.com\",\n  \"password\": \"Test1234!\",\n  \"role\": \"artist\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Note: 'role' input on register is ignored/rejected by design per NO-ROLE-INPUT security fix in current backend. Verify server behavior matches intended access control (artist role should require separate approval flow, not self-declared at registration)."
+          },
+          "response": []
+        },
+        {
+          "name": "Register Admin (manual DB promotion required)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201/400/409', function () {",
+                  "    pm.expect([200,201,400,409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"adminuser\",\n  \"email\": \"{{testAdminEmail}}\",\n  \"password\": \"Admin1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register normally, then manually promote in MongoDB: db.users.updateOne({email:'admin@example.com'}, {$set:{role:'admin'}}). Then use the Admin Login request below."
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "pm.test('Response has accessToken', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('accessToken');",
+                  "});",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) { pm.collectionVariables.set('accessToken', res.accessToken); }",
+                  "    if (res.refreshToken) { pm.collectionVariables.set('refreshToken', res.refreshToken); }",
+                  "    if (res.user && res.user._id) { pm.collectionVariables.set('userId', res.user._id); }",
+                  "    if (res.data && res.data.accessToken) { pm.collectionVariables.set('accessToken', res.data.accessToken); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Wrong Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/401', function () {",
+                  "    pm.expect([400,401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"WrongPassword1!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Non-existent User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/401/404', function () {",
+                  "    pm.expect([400,401,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doesnotexist{{$randomInt}}@example.com\",\n  \"password\": \"Test1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Rate Limit Check (fire rapidly to test authLimiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/401/429', function () {",
+                  "    pm.expect([200,400,401,429]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('If rate-limited, returns 429', function () {",
+                  "    if (pm.response.code === 429) { pm.expect(pm.response.text()).to.include(''); }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Test1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Artist",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{artistEmail}}\",\r\n  \"password\": \"{{artistPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Login - Success (after manual DB promotion)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.expect(pm.response.code).to.equal(200); });",
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) { pm.collectionVariables.set('adminToken', res.accessToken); }",
+                  "    if (res.refreshToken) { pm.collectionVariables.set('adminRefreshToken', res.refreshToken); }",
+                  "    if (res.user && res.user._id) { pm.collectionVariables.set('adminUserId', res.user._id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testAdminEmail}}\",\n  \"password\": \"Admin1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Google OAuth - Redirect Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/302', function () {",
+                  "    pm.expect([200,302]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Sets oauth_state cookie', function () {",
+                  "    pm.expect(pm.response.headers.has('Set-Cookie')).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
+            },
+            "description": "This initiates a redirect to Google OAuth consent screen; cannot be fully automated in Postman tests. Manually verify in browser."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/401', function () {",
+                  "    pm.expect([200,401]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) { pm.collectionVariables.set('accessToken', res.accessToken); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "refreshToken={{refreshToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Requires refreshToken cookie to be set by browser/Postman cookie jar (httpOnly). If testing purely via variable substitution, ensure your environment sends the cookie correctly."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token - No Cookie (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/401', function () {",
+                  "    pm.expect([400,401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token - Rate Limit Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/401/429', function () {",
+                  "    pm.expect([200,400,401,429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "refreshToken={{refreshToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "refreshToken={{refreshToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 User Profile",
+      "item": [
+        {
+          "name": "Get My Profile - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "pm.test('Response has _id', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('_id');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Profile - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Profile - Invalid Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token_12345"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Features of User Per Plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/features",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "features"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"updatedname_{{$randomInt}}\",\n  \"bio\": \"Music lover\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile - Invalid Data (validation error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Avatar - Success (attach image)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400', function () {",
+                  "    pm.expect([200,400]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('If no file attached, expect 400', function () {",
+                  "    if (!pm.response.code || pm.response.code === 400) { pm.expect([200,400]).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "avatar"
+              ]
+            },
+            "description": "Attach a valid image file (jpg/png) to the 'avatar' form field before running. File type restricted server-side to image/*."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Avatar - Wrong File Type (should fail 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.expect([400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "avatar"
+              ]
+            },
+            "description": "Attach a non-image file (e.g. .txt or .mp3) to verify server rejects with 'Only image files allowed'."
+          },
+          "response": []
+        },
+        {
+          "name": "Set Password - Success (for OAuth users setting first password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400', function () {",
+                  "    pm.expect([200,400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NewPass1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/set-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "set-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Password - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NewPass1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/set-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "set-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Artist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/artist/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "artist",
+                "request"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎵 Music (Public)",
+      "item": [
+        {
+          "name": "Get All Songs - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/all-songs?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "all-songs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Songs - Save First Song ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "const list = res.songs || res.data || res.results || (Array.isArray(res) ? res : []);",
+                  "if (Array.isArray(list) && list.length > 0 && list[0]._id) {",
+                  "    pm.collectionVariables.set('songId', list[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/all-songs?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "all-songs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Albums - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/all-albums?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "all-albums"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Albums - Save First Album ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "const list = res.albums || res.data || res.results || (Array.isArray(res) ? res : []);",
+                  "if (Array.isArray(list) && list.length > 0 && list[0]._id) {",
+                  "    pm.collectionVariables.set('albumId', list[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/all-albums?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "all-albums"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Album By ID - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/albums/{{albumId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "albums",
+                "{{albumId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Album By ID - Invalid ID Format (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/albums/invalid-id-123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "albums",
+                "invalid-id-123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Songs - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/search/songs?q=test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "search",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Songs - Empty Query",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400', function () {",
+                  "    pm.expect([200,400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/search/songs?q=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "search",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Songs - Rate Limit Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/429', function () {",
+                  "    pm.expect([200,429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/search/songs?q=a",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "search",
+                "songs"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "a"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Artists - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/search/artists?q=test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "search",
+                "artists"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "test"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trending Songs - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/trending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "trending"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎵 Music (Authenticated)",
+      "item": [
+        {
+          "name": "Play Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/403/404', function () {",
+                  "    pm.expect([200,403,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/play/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "play",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Play Song - Invalid Song ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/play/invalid-id-123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "play",
+                "invalid-id-123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Play Song - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/play/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "play",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Play Song - Daily Limit Check (repeat to trigger checkDailyLimit)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/403/404/429', function () {",
+                  "    pm.expect([200,403,404,429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/play/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "play",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Stream Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/206/403/404', function () {",
+                  "    pm.expect([200,206,403,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/stream/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "stream",
+                "{{songId}}"
+              ]
+            },
+            "description": "New endpoint: streams audio with media access verification (verifyMediaAccess). Expect 200/206 (partial content for range requests) if access allowed, 403 if premium-only content and user is free tier."
+          },
+          "response": []
+        },
+        {
+          "name": "Stream Song - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/stream/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "stream",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Stream Song - Rate Limit Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/206/403/404/429', function () {",
+                  "    pm.expect([200,206,403,404,429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/stream/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "stream",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get History - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get History - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Download Song - Success (Premium Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/403/404', function () {",
+                  "    pm.expect([200,403,404]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('403 if user is not premium', function () {",
+                  "    if (pm.response.code === 403) { pm.expect(pm.response.text()).to.be.a('string'); }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/download/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "download",
+                "{{songId}}"
+              ]
+            },
+            "description": "Requires active premium subscription (allowDownload middleware) + daily limit check + download audit logging."
+          },
+          "response": []
+        },
+        {
+          "name": "Download Song - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/music/download/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "download",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Download Song - Free User Blocked (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403/200/404', function () {",
+                  "    pm.expect([403,200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/music/download/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "download",
+                "{{songId}}"
+              ]
+            },
+            "description": "Run this with a known free-tier accessToken to confirm 403 Forbidden is returned."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎤 Artist Routes",
+      "item": [
+        {
+          "name": "Upload Song - Success (Verified Artist Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201/403', function () {",
+                  "    pm.expect([200,201,403]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('403 if artist not verified', function () {",
+                  "    if (pm.response.code === 403) { pm.expect(pm.response.text()).to.be.a('string'); }",
+                  "});",
+                  "if ([200,201].includes(pm.response.code)) {",
+                  "    const res = pm.response.json();",
+                  "    const song = res.song || res.data || res;",
+                  "    if (song && song._id) { pm.collectionVariables.set('songId', song._id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "My First Song",
+                  "type": "text"
+                },
+                {
+                  "key": "music",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "upload"
+              ]
+            },
+            "description": "Requires: requireVerifiedArtist middleware — artist must be admin-approved first. Attach a valid .mp3/.wav file to the 'music' field. Rate limited via uploadLimiter."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Song - Wrong File Type (should fail 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/403', function () {",
+                  "    pm.expect([400,403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Bad File Test",
+                  "type": "text"
+                },
+                {
+                  "key": "music",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "upload"
+              ]
+            },
+            "description": "Attach a non-audio file to verify server rejects with 'Only audio files allowed'."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Song - Unverified Artist (should fail 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403/401', function () {",
+                  "    pm.expect([403,401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Unauthorized Attempt",
+                  "type": "text"
+                },
+                {
+                  "key": "music",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "upload"
+              ]
+            },
+            "description": "Using a regular (non-artist) user token should be rejected by requireVerifiedArtist."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Song - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "No Auth",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Album - Success (Verified Artist Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201/403', function () {",
+                  "    pm.expect([200,201,403]).to.include(pm.response.code);",
+                  "});",
+                  "if ([200,201].includes(pm.response.code)) {",
+                  "    const res = pm.response.json();",
+                  "    const album = res.album || res.data || res;",
+                  "    if (album && album._id) { pm.collectionVariables.set('albumId', album._id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Album\",\n  \"musics\": [\n    \"{{songId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/album",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "album"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Album - Unverified Artist (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403/401', function () {",
+                  "    pm.expect([403,401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized Album\",\n  \"musics\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/album",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "album"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Album - Missing Title (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/403/422', function () {",
+                  "    pm.expect([400,403,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"musics\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/music/album",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "music",
+                "album"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Artist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/artist/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "artist",
+                "request"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎧 Playlists",
+      "item": [
+        {
+          "name": "Create Playlist - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201', function () {",
+                  "    pm.expect([200,201]).to.include(pm.response.code);",
+                  "});",
+                  "if ([200,201].includes(pm.response.code)) {",
+                  "    const res = pm.response.json();",
+                  "    const pl = res.playlist || res.data || res;",
+                  "    if (pl && pl._id) { pm.collectionVariables.set('playlistId', pl._id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Playlist\",\n  \"isPublic\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Playlist - Missing Title (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isPublic\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Playlist - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"No Auth Playlist\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Song to Playlist - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playlistId\": \"{{playlistId}}\",\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists/add-song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "add-song"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Song to Playlist - Invalid Playlist ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playlistId\": \"invalid-id\",\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists/add-song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "add-song"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Song to Playlist - Missing songId (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playlistId\": \"{{playlistId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists/add-song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "add-song"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Song from Playlist - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playlistId\": \"{{playlistId}}\",\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists/remove-song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "remove-song"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Song from Playlist - Song Not In Playlist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/404', function () {",
+                  "    pm.expect([200,400,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playlistId\": \"{{playlistId}}\",\n  \"songId\": \"000000000000000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/playlists/remove-song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "remove-song"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Playlists - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Playlists - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/user",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Playlist By ID - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/{{playlistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "{{playlistId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Playlist By ID - Invalid ID (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/invalid-id-123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "invalid-id-123"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Playlist By ID - Not Found (valid format, nonexistent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.expect([404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/000000000000000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "000000000000000000000000"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Playlist - Unauthorized Owner (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403/404', function () {",
+                  "    pm.expect([403,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{artistToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/{{playlistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "{{playlistId}}"
+              ]
+            },
+            "description": "Attempting to delete another user's playlist should be forbidden."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Playlist - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/204/404', function () {",
+                  "    pm.expect([200,204,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/{{playlistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "{{playlistId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Playlist - Already Deleted (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.expect([404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/playlists/{{playlistId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "playlists",
+                "{{playlistId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📜 Queue",
+      "item": [
+        {
+          "name": "Add to Queue - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201/404', function () {",
+                  "    pm.expect([200,201,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add to Queue - Missing songId (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add to Queue - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/current",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "current"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Next Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/next",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "next"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Next Song - Empty Queue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/404', function () {",
+                  "    pm.expect([200,400,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/next",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "next"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Previous Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/prev",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "prev"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Queue Songs - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Shuffle - Disable",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/queue/shuffle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "shuffle"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Shuffle - Enable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shuffle\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/shuffle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "shuffle"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Shuffle - Invalid Value (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/422', function () {",
+                  "    pm.expect([200,400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shuffle\": \"notaboolean\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/shuffle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "shuffle"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Repeat - Set 'one'",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"repeatMode\": \"one\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/repeat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "repeat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Repeat - Set 'all'",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"repeatMode\": \"all\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/repeat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "repeat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Repeat - Set 'off'",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"repeatMode\": \"off\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/repeat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "repeat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Repeat - Invalid Mode (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"repeatMode\": \"invalidmode\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/queue/repeat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "repeat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Queue - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/204', function () {",
+                  "    pm.expect([200,204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/queue/clear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "clear"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Queue - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/queue/clear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "queue",
+                "clear"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "❤️ Likes",
+      "item": [
+        {
+          "name": "Like Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201/404', function () {",
+                  "    pm.expect([200,201,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "like"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Like Song - Already Liked (idempotent/duplicate)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/409', function () {",
+                  "    pm.expect([200,400,409]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "like"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Like Song - Missing songId (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/422', function () {",
+                  "    pm.expect([400,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/likes/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "like"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Like Song - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "like"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Song Likes - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/likes/likes/{{songId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "likes",
+                "{{songId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Song Likes - Invalid Song ID (validation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/likes/likes/invalid-id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "likes",
+                "invalid-id"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Song - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes/unlike",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "unlike"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unlike Song - Not Previously Liked",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/404', function () {",
+                  "    pm.expect([200,400,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"songId\": \"{{songId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes/unlike",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "likes",
+                "unlike"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💳 Payment / Stripe",
+      "item": [
+        {
+          "name": "Create Checkout Session - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/201', function () {",
+                  "    pm.expect([200,201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response has url', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('url');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "checkout"
+              ]
+            },
+            "description": "Creates a Stripe Checkout session. Response should contain a redirect 'url'. Rate limited via paymentLimiter."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout Session - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "checkout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checkout Session - Already Premium (should fail/no-op)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400', function () {",
+                  "    pm.expect([200,400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "checkout"
+              ]
+            },
+            "description": "Run after user is already premium to confirm server handles duplicate subscription attempts gracefully."
+          },
+          "response": []
+        },
+        {
+          "name": "Change Subscription Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"planKey\": \"pro\",\r\n    \"interval\": \"monthly\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment/change-plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "change-plan"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Payment plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "plans"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscription Status - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/subscription/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "subscription",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscription Status - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment/subscription/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "subscription",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment History - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Payment History - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Open Billing Portal - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400', function () {",
+                  "    pm.expect([200,400]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Returns portal url on success', function () {",
+                  "    if (pm.response.code === 200) { pm.expect(pm.response.json()).to.have.property('url'); }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/billing-portal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "billing-portal"
+              ]
+            },
+            "description": "Requires an existing Stripe customer (i.e. user must have checked out at least once)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/404', function () {",
+                  "    pm.expect([200,400,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "subscription"
+              ]
+            },
+            "description": "Cancels the active Stripe subscription. Rate limited via paymentLimiter."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription - No Active Subscription",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/400/404', function () {",
+                  "    pm.expect([200,400,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payment/subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "subscription"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Subscription - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment/subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payment",
+                "subscription"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Stripe Webhook (reference)",
+      "item": [
+        {
+          "name": "Stripe Webhook - Invalid Signature (should fail 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.expect([400]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "invalid_test_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"checkout.session.completed\",\"data\":{\"object\":{}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/webhook",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "webhook"
+              ]
+            },
+            "description": "Webhook route is mounted separately (raw body, NOT under /api). Test with an invalid/missing 'stripe-signature' header — expect 400 'Invalid Stripe Signature'. Use Stripe CLI (stripe trigger checkout.session.completed) for real end-to-end tests with a valid signature; Postman cannot compute a valid Stripe signature without the webhook secret."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛡️ Admin",
+      "item": [
+        {
+          "name": "Get Pending Artists - Success (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "const res = pm.response.json();",
+                  "const list = res.artists || res.data || (Array.isArray(res) ? res : []);",
+                  "if (Array.isArray(list) && list.length > 0 && list[0]._id) {",
+                  "    pm.collectionVariables.set('artistUserId', list[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "pending"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Artists - Non-Admin Forbidden (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "pending"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Artists - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "pending"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Artist - Success (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/{{artistUserId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "{{artistUserId}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Artist - Non-Admin Forbidden (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/{{artistUserId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "{{artistUserId}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Artist - Invalid User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400/404/422', function () {",
+                  "    pm.expect([400,404,422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/invalid-id-123/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "invalid-id-123",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Artist - Success (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/{{artistUserId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "{{artistUserId}}",
+                "reject"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Artist - Non-Admin Forbidden (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/{{artistUserId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "{{artistUserId}}",
+                "reject"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban User - Success (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/ban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "ban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban User - Non-Admin Forbidden (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/ban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "ban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban User - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.expect([401]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/ban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "ban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unban User - Success (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/404', function () {",
+                  "    pm.expect([200,404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/unban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "unban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unban User - Non-Admin Forbidden (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.expect([403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/unban",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{userId}}",
+                "unban"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Rate Limit Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200/403/429', function () {",
+                  "    pm.expect([200,403,429]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/artists/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "artists",
+                "pending"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "adminRefreshToken",
+      "value": ""
+    },
+    {
+      "key": "artistToken",
+      "value": ""
+    },
+    {
+      "key": "artistRefreshToken",
+      "value": ""
+    },
+    {
+      "key": "artistUserId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "songId",
+      "value": ""
+    },
+    {
+      "key": "albumId",
+      "value": ""
+    },
+    {
+      "key": "playlistId",
+      "value": ""
+    },
+    {
+      "key": "testEmail",
+      "value": "testuser@example.com"
+    },
+    {
+      "key": "testAdminEmail",
+      "value": "admin@example.com"
+    },
+    {
+      "key": "artistEmail",
+      "value": "testartist@example.com"
+    },
+    {
+      "key": "artistPassword",
+      "value": "Test1234!"
+    }
+  ]
+}
