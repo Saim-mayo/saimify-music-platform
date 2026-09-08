@@ -154,9 +154,41 @@ Then open:
 - `http://localhost:3000/health` — health check
 - `http://localhost:3000/api-docs` — Swagger UI (development only)
 
+### Local frontend / backend integration (cookies & dev proxy)
+
+During development the frontend runs on Vite (default `http://localhost:5173`) and the backend on Express (default `http://localhost:3000`).
+
+To avoid third-party cookie restrictions (browsers blocking cookies when the API is on a different origin), the frontend uses a same-origin `/api` path and Vite's `server.proxy` to forward `/api/*` requests to the backend. This ensures authentication cookies set by the backend are stored and sent by the browser for subsequent API calls.
+
+Key points:
+- Keep `VITE_API_BASE_URL` empty in `frontend/.env` during local development so the client uses the proxied `/api` path.
+- In `frontend/vite.config.js` the `server.proxy` should point `/api` to your backend (e.g. `http://localhost:3000`).
+- Do NOT try to workaround the problem by weakening cookie security (SameSite/HttpOnly) — the correct fix is same-origin dev requests via the proxy or serving the frontend under the same origin as the backend.
+
+If you expose your backend through a public tunnel (ngrok) for sharing, either:
+- Run the frontend through the same tunnel/domain, or
+- Configure the tunnel to preserve CORS and cookie behavior and avoid third-party cookies; however this is fragile across browsers and not recommended for regular development.
+
 ## Production
 
-Build and run the production server:
+The repository includes a production API image and a Compose deployment for the
+API plus MongoDB. Before deploying:
+
+1. Copy `backend/.env.example` to `.env` and replace every placeholder with
+   production values. Set `NODE_ENV=production`, live Stripe keys/webhook mode,
+   the public frontend URL, and the frontend origin in `ALLOWED_ORIGINS`.
+2. Build the frontend with `VITE_API_BASE_URL` set to the public API base URL
+   including `/api`, and deploy the generated `frontend/dist` to a static host.
+3. Start the API and MongoDB with:
+
+```bash
+docker compose up -d --build
+```
+
+The API container waits for MongoDB health and exposes `/health` on port 3000.
+Configure your reverse proxy or platform health check to use that endpoint.
+
+For a non-container production server:
 
 ```bash
 npm start

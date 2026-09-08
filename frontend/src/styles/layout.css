@@ -1,0 +1,36 @@
+/* Reusable layout utilities to increase information density and consistency */
+.container {
+  width: min(100%, var(--content-max));
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding-inline);
+  padding-right: var(--container-padding-inline);
+}
+
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.grid-compact {
+  gap: var(--space-3);
+}
+
+.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.row { display: flex; gap: var(--space-3); align-items: center; }
+
+/* Utility to fit denser cards while preserving touch targets */
+.card-compact { padding: 12px; border-radius: 14px; }
+
+/* Anchor footer content in flex column sidebars to avoid dead vertical space */
+.sidebar-footer { margin-top: auto; display: flex; gap: var(--space-2); align-items: center; padding: 8px 6px; }
+.sidebar-footer .eyebrow { font-size: 0.82rem; font-weight: 700; display: block; }
+.sidebar-footer .subtitle { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.05; max-width: 160px; }
+
+@media (min-width: 1400px) {
+  .container { padding-left: calc(var(--container-padding-inline) * 2); padding-right: calc(var(--container-padding-inline) * 2); }
+  .grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}

@@ -1,0 +1,12 @@
+﻿<!-- Monochrome favicon: black-on-white curved-dot S mark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="faviconTitle">
+  <title id="faviconTitle">Saimify</title>
+  <rect width="64" height="64" rx="10" fill="#fff" />
+  <g fill="#000" transform="translate(6,8)">
+    <circle cx="6"  cy="6"  r="2.5"/>
+    <circle cx="16" cy="18" r="5"/>
+    <circle cx="28" cy="30" r="3.5"/>
+    <circle cx="40" cy="18" r="5"/>
+    <circle cx="52" cy="6"  r="2.5"/>
+  </g>
+</svg>

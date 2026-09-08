@@ -1,13 +1,13 @@
-version: '3.9'
-
 services:
   mongo:
     image: mongo:7.0
     restart: unless-stopped
+    ports:
+      - '27017:27017'
     volumes:
       - mongo-data:/data/db
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -16,14 +16,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    working_dir: /app/backend
     ports:
       - '3000:3000'
+    env_file:
+      - path: .env
+        required: false
     environment:
-      NODE_ENV: development
-      PORT: 3000
-      MONGO_URI: mongodb://mongo:27017/spotify-clone
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/spotify-clone}
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/health"]
       interval: 30s

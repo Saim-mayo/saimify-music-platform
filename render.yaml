@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: spotify-clone-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_HMAC_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_WEBHOOK_MODE
+        value: test
+      - key: STRIPE_SUCCESS_URL
+        sync: false
+      - key: STRIPE_CANCEL_URL
+        sync: false
+      - key: IMAGE_KIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGE_KIT_PRIVATE_KEY
+        sync: false
+      - key: IMAGE_KIT_URL_ENDPOINT
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: ADMIN_SEED_EMAIL
+        sync: false
+      - key: ADMIN_SEED_PASSWORD
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRES
+        value: 15m
+      - key: REFRESH_TOKEN_EXPIRES
+        value: 7d
+      - key: STRIPE_AUTOMATIC_TAX
+        value: "false"
