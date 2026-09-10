@@ -20,8 +20,6 @@ dotenv.config({ path: backendEnvPath, override: false });
 // localhost-only default). Fixed by exporting every var the app reads,
 // not just the ones with boot-time validation.
 const REQUIRED_ENV_VARS = [
-   'PORT',
-
    'MONGO_URI',
 
    'JWT_ACCESS_SECRET',
@@ -79,8 +77,8 @@ if (process.env.NODE_ENV === 'production') {
       .map(([key]) => key);
 
    if (localhostUrls.length) {
-      throw new Error(
-         `Production URL configuration cannot contain localhost: ${localhostUrls.join(', ')}`
+      console.warn(
+         `WARNING: Production URL configuration contains localhost: ${localhostUrls.join(', ')}. This is only safe for temporary local testing.`
       );
    }
 }
@@ -101,7 +99,7 @@ if (missing.length) {
 module.exports = Object.freeze({
    NODE_ENV: process.env.NODE_ENV || 'development',
 
-   PORT: Number(process.env.PORT),
+   PORT: Number(process.env.PORT || 3000),
 
    MONGO_URI: process.env.MONGO_URI,
 
