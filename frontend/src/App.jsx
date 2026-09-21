@@ -124,12 +124,14 @@ export default function App() {
   const fetchMe = useAuthStore((s) => s.fetchMe)
   const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const loading = useAuthStore((s) => s.loading)
+  const initialized = useAuthStore((s) => s.initialized)
   const hasFetchedMe = useRef(false)
 
   const refreshDelayMs = Math.max(runtime.accessTokenExpiresMs - runtime.accessTokenRefreshLeadMs, runtime.minimumRefreshDelayMs)
 
   useEffect(() => {
+    const isPublicRoute = publicPaths.some((path) => window.location.pathname.startsWith(path))
+    if (isPublicRoute) return
     if (hasFetchedMe.current) return
     hasFetchedMe.current = true
     fetchMe()
@@ -138,7 +140,7 @@ export default function App() {
   useSessionRefresh({ isAuthenticated, refresh: refreshAccessToken, delayMs: refreshDelayMs })
 
   if (
-    loading &&
+    !initialized &&
     !publicPaths.some((path) => window.location.pathname.startsWith(path))
   ) {
     return <LoadingSpinner label="Preparing your listening space…" />

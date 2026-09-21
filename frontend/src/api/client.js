@@ -14,18 +14,27 @@ const apiClient = axios.create({
 
 let refreshPromise = null
 let refreshChannel = null
+let sessionActive = false
 const refreshLockName = 'spotify-refresh-token'
 const refreshSignalKey = 'spotify-refresh-token-signal'
 
 const isAuthRoute = (url = '') => /\/auth\/(login|register|refresh-token|logout|forgot-password|reset-password|verify-email|resend-verification)/.test(url)
 
 export const refreshSession = () => {
+  if (!sessionActive) {
+    return Promise.reject(Object.assign(new Error('Session inactive'), { response: { status: 401 } }))
+  }
   if (!refreshPromise) {
     refreshPromise = coordinateRefresh().finally(() => {
       refreshPromise = null
     })
   }
   return refreshPromise
+}
+
+export const setSessionActive = (active) => {
+  sessionActive = Boolean(active)
+  if (!sessionActive) refreshPromise = null
 }
 
 const refreshRequest = () => apiClient.post('/auth/refresh-token')
@@ -163,7 +172,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status
     const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh-token')
 
-    if (!originalRequest || isRefreshRequest || status !== 401 || isAuthRoute(originalRequest?.url)) {
+    if (!originalRequest || isRefreshRequest || status !== 401 || isAuthRoute(originalRequest?.url) || !sessionActive) {
       return Promise.reject(error)
     }
 

@@ -4,9 +4,9 @@ import LoadingSpinner from './LoadingSpinner'
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation()
-  const { isAuthenticated, loading } = useAuthStore()
+  const { isAuthenticated, initialized } = useAuthStore()
 
-  if (loading) {
+  if (!initialized) {
     return <LoadingSpinner label="Loading your session…" />
   }
 
