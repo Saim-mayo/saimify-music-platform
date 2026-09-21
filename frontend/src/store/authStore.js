@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { runtime } from '@/config/runtime'
+import { setSessionActive } from '@/api/client'
+import { usePlayerStore } from './playerStore'
 import {
   forgotPassword,
   getMe,
@@ -35,27 +37,43 @@ const normalizeUser = (user) => {
 }
 
 const isInvalidSessionError = (error) => [401, 403].includes(error?.response?.status)
+const isRetryableSessionError = (error) => !error?.response || error.response.status >= 500
+const sessionBootstrapRetryDelays = [250, 750]
+
+const loadSession = async () => {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await Promise.all([getMe(), getMyFeatures().catch(() => null)])
+    } catch (error) {
+      const retryDelay = sessionBootstrapRetryDelays[attempt]
+      if (!retryDelay || !isRetryableSessionError(error)) throw error
+      await new Promise((resolve) => window.setTimeout(resolve, retryDelay))
+    }
+  }
+}
 
 export const useAuthStore = create((set, get) => ({
   user: null,
   features: null,
   isAuthenticated: false,
-  loading: true,
+  initialized: false,
+  loading: false,
 
   async fetchMe() {
+    setSessionActive(true)
     set({ loading: true })
     try {
-      const [user, features] = await Promise.all([getMe(), getMyFeatures().catch(() => null)])
+      const [user, features] = await loadSession()
       const normalizedUser = normalizeUser(user)
-      set({ user: normalizedUser, features, isAuthenticated: Boolean(normalizedUser), loading: false })
+      set({ user: normalizedUser, features, isAuthenticated: Boolean(normalizedUser), initialized: true, loading: false })
       return normalizedUser
     } catch (error) {
       const currentUser = get().user
       if (currentUser && !isInvalidSessionError(error)) {
-        set({ loading: false })
+        set({ initialized: true, loading: false })
         return currentUser
       }
-      set({ user: null, features: null, isAuthenticated: false, loading: false })
+      set({ user: null, features: null, isAuthenticated: false, initialized: true, loading: false })
       return null
     }
   },
@@ -73,6 +91,7 @@ export const useAuthStore = create((set, get) => ({
   async login(payload) {
     set({ loading: true })
     try {
+      setSessionActive(true)
       const data = await login(payload)
       const user = await get().fetchMe()
       return { ...data, user }
@@ -85,6 +104,7 @@ export const useAuthStore = create((set, get) => ({
   async register(payload) {
     set({ loading: true })
     try {
+      setSessionActive(true)
       const data = await register(payload)
       const user = await get().fetchMe()
       return { ...data, user }
@@ -95,6 +115,8 @@ export const useAuthStore = create((set, get) => ({
   },
 
   async logout() {
+    setSessionActive(false)
+    usePlayerStore.getState().resetPlayback()
     set({ loading: true })
     try {
       await logout()
@@ -135,6 +157,10 @@ export const useAuthStore = create((set, get) => ({
   },
 
   async refreshAccessToken() {
+    if (!get().isAuthenticated) {
+      setSessionActive(false)
+      return null
+    }
     set({ loading: true })
     try {
       await refreshAccessTokenRequest()
