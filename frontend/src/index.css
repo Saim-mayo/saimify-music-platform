@@ -2654,5 +2654,117 @@ p { color: var(--muted); }
     font-size: 0.65rem;
     gap: 4px;
   }
+
+  /* Keep album and playlist heroes readable on narrow screens. */
+  .playlist-hero,
+  .section-hero {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .playlist-hero .artwork-medium,
+  .section-hero .artwork-medium,
+  .playlist-hero .playlist-hero-artwork {
+    width: min(100%, 220px);
+    justify-self: center;
+    border-radius: 18px;
+  }
+
+  .playlist-hero-copy,
+  .section-hero .playlist-hero-copy {
+    gap: 10px;
+  }
+
+  .playlist-hero-copy h1,
+  .section-hero .playlist-hero-copy h1 {
+    font-size: clamp(1.65rem, 8vw, 2.2rem);
+    overflow-wrap: anywhere;
+  }
+
+  .playlist-hero-copy .subtitle,
+  .section-hero .playlist-hero-copy .subtitle {
+    gap: 6px;
+    font-size: 0.82rem;
+  }
+
+  .playlist-hero .row-actions,
+  .section-hero .row-actions,
+  .playlist-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .playlist-hero .row-actions > *,
+  .section-hero .row-actions > *,
+  .playlist-hero-actions > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .playlist-hero .playlist-picker-shell,
+  .section-hero .playlist-picker-shell,
+  .playlist-hero .playlist-picker-shell > button,
+  .section-hero .playlist-picker-shell > button {
+    width: 100%;
+  }
+
+  .playlist-detail {
+    padding: 12px;
+  }
+
+  .track-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .track-main {
+    min-width: 0;
+  }
+
+  .track-row-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .track-copy strong,
+  .track-copy small {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 800px) {
+  .playlist-hero,
+  .section-hero {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .playlist-hero .artwork-medium,
+  .section-hero .artwork-medium,
+  .playlist-hero .playlist-hero-artwork {
+    width: min(100%, 260px);
+    justify-self: center;
+  }
+
+  .playlist-hero .row-actions,
+  .section-hero .row-actions,
+  .playlist-hero-actions {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .playlist-hero .row-actions > *,
+  .section-hero .row-actions > *,
+  .playlist-hero-actions > * {
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
