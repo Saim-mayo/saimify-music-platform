@@ -87,6 +87,18 @@ const {
    getCustomerSubscriptions
 } = require('../services/stripe.service');
 
+const recoverActiveCustomerSubscription = async (user) => {
+   const customerId = user?.subscription?.stripeCustomerId;
+   if (!customerId || user?.subscription?.stripeSubscriptionId) return null;
+
+   const subscriptions = await getCustomerSubscriptions(customerId) || [];
+   const activeSubscription = subscriptions
+      .filter((subscription) => isActionableSubscriptionStatus(subscription?.status))
+      .sort((left, right) => Number(right?.current_period_end || 0) - Number(left?.current_period_end || 0))[0];
+
+   return activeSubscription?.id ? getSubscription(activeSubscription.id) : null;
+};
+
 // ===========================
 // LIST PLANS (public — no price IDs or secrets, just display data)
 // ===========================
@@ -326,6 +338,38 @@ const changePlan = asyncHandler(async (req, res) => {
 
       if (user.isBanned) {
          throw new AppError('Account banned', 403);
+      }
+
+      const recoveredSubscription = await recoverActiveCustomerSubscription(user);
+      if (recoveredSubscription) {
+         const remotePriceId = recoveredSubscription.items?.data?.[0]?.price?.id;
+         const resolvedPlan = resolvePlanFromPriceId(remotePriceId);
+         const currentPeriodEnd = recoveredSubscription.current_period_end
+            ?? recoveredSubscription.items?.data?.[0]?.current_period_end
+            ?? null;
+
+         if (resolvedPlan && currentPeriodEnd) {
+            await setUserPlan(
+               {
+                  userId: user._id,
+                  stripeCustomerId: recoveredSubscription.customer,
+                  stripeSubscriptionId: recoveredSubscription.id
+               },
+               {
+                  plan: resolvedPlan.planKey,
+                  billingInterval: resolvedPlan.interval,
+                  stripePriceId: remotePriceId,
+                  status: recoveredSubscription.status,
+                  expiresAt: new Date(currentPeriodEnd * 1000)
+               }
+            );
+            user.subscription.plan = resolvedPlan.planKey;
+            user.subscription.billingInterval = resolvedPlan.interval;
+            user.subscription.stripeSubscriptionId = recoveredSubscription.id;
+            user.subscription.stripePriceId = remotePriceId;
+            user.subscription.status = recoveredSubscription.status;
+            user.subscription.expiresAt = new Date(currentPeriodEnd * 1000);
+         }
       }
 
       const context = await getSubscriptionContext(user, req.user.userId);

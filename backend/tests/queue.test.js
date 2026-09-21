@@ -154,10 +154,11 @@ describe('GET /api/queue/current', () => {
       expect(res.status).toBe(401);
    });
 
-   it('returns 404 when the queue is empty or missing', async () => {
+   it('returns an empty current queue when the queue is empty or missing', async () => {
       const { cookie } = await createAuthedUser();
       const res = await request(app).get('/api/queue/current').set('Cookie', [cookie]);
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ currentIndex: 0, song: null });
    });
 
    it('returns the song at currentIndex', async () => {
@@ -270,10 +271,11 @@ describe('GET /api/queue/all', () => {
       expect(res.status).toBe(401);
    });
 
-   it('returns 404 when the queue is empty', async () => {
+   it('returns an empty list when the queue is empty', async () => {
       const { cookie } = await createAuthedUser();
       const res = await request(app).get('/api/queue/all').set('Cookie', [cookie]);
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ queue: [] });
    });
 
    it('returns all songs in the queue', async () => {

@@ -179,6 +179,18 @@ API plus MongoDB. Before deploying:
    the public frontend URL, and the frontend origin in `ALLOWED_ORIGINS`.
 2. Build the frontend with `VITE_API_BASE_URL` set to the public API base URL
    including `/api`, and deploy the generated `frontend/dist` to a static host.
+
+For the current Railway backend, the Vercel configuration proxies frontend
+API requests through the Vercel origin and points OAuth at:
+
+- API upstream: `https://saimify-music-platform-production-ae13.up.railway.app/api`
+- OAuth: `https://saimify-music-platform-production-ae13.up.railway.app`
+
+After the first Vercel deployment, add the exact Vercel origin (for example,
+`https://your-project.vercel.app`) to Railway's `ALLOWED_ORIGINS` variable. If
+the Vercel domain changes, update that Railway variable and redeploy the API.
+The backend `CLIENT_URL` should also be the final Vercel origin so email links
+and Stripe redirects return to the deployed frontend.
 3. Start the API and MongoDB with:
 
 ```bash

@@ -62,7 +62,10 @@ const getCurrentSongService = async (userId) => {
    const populatedQueueDoc = await populateQueueArtistData(queueDoc);
 
    if (!populatedQueueDoc || populatedQueueDoc.queue.length === 0) {
-      throw new AppError('Queue is empty', 404);
+      return {
+         currentIndex: 0,
+         song: null
+      };
    }
 
    const song = populatedQueueDoc.queue[populatedQueueDoc.currentIndex];
@@ -173,7 +176,7 @@ const allSongsService = async (userId) => {
    const populatedQueueDoc = await populateQueueArtistData(queueDoc);
 
    if (!populatedQueueDoc || populatedQueueDoc.queue.length === 0) {
-      throw new AppError('Queue is empty', 404);
+      return [];
    }
 
    return populatedQueueDoc.queue;

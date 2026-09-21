@@ -42,8 +42,6 @@ const {
 // HTTP contexts. Use lax in non-secure dev/proxy scenarios and none only
 // over HTTPS or in production.
 const cookieOptions = (req) => {
-   const forwardedHost = req.headers['x-forwarded-host'] ? String(req.headers['x-forwarded-host']).split(':')[0] : null
-   const hostForDomain = forwardedHost && forwardedHost !== 'localhost' ? forwardedHost : undefined
    const opts = {
       httpOnly: true,
       secure: env.NODE_ENV === 'production' || req.secure,
@@ -51,7 +49,6 @@ const cookieOptions = (req) => {
       maxAge: limits.authCookieMaxAgeMs,
       path: '/'
    }
-   if (hostForDomain) opts.domain = hostForDomain
    return opts
 }
 

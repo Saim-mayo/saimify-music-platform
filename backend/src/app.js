@@ -61,12 +61,16 @@ const configuredOrigins = (env.ALLOWED_ORIGINS || '')
    .map((origin) => origin.trim())
    .filter(Boolean)
 
-const allowedOrigins = Array.from(new Set([
-   ...configuredOrigins,
+const developmentOrigins = env.NODE_ENV === 'production' ? [] : [
    'http://localhost:5173',
    'http://127.0.0.1:5173',
    'http://localhost:3000',
    'http://127.0.0.1:3000',
+]
+
+const allowedOrigins = Array.from(new Set([
+   ...configuredOrigins,
+   ...developmentOrigins,
 ]))
 
 app.use(
