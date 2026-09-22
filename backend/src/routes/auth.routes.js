@@ -126,7 +126,8 @@ router.get('/google', (req, res, next) => {
    res.cookie('oauth_state', state, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
       maxAge: 10 * 60 * 1000
    });
 
@@ -170,7 +171,12 @@ router.get(
          });
       }
 
-      res.clearCookie('oauth_state');
+      res.clearCookie('oauth_state', {
+         httpOnly: true,
+         secure: env.NODE_ENV === 'production',
+         sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+         path: '/'
+      });
 
       next();
 

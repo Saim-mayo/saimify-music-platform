@@ -77,6 +77,15 @@ export default function Navbar() {
 
   const handleForward = () => navigate(1)
 
+  const handleLogout = async () => {
+    setMenuOpen(false)
+    try {
+      await logout()
+    } finally {
+      navigate('/welcome', { replace: true })
+    }
+  }
+
   if (!isAuthenticated) {
     return (
       <header className="topbar">
@@ -155,7 +164,7 @@ export default function Navbar() {
             <div className="user-menu">
               <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
               {userIsAdmin ? <Link to="/admin" onClick={() => setMenuOpen(false)}>Admin panel</Link> : null}
-              <button type="button" onClick={() => { logout().catch(() => {}); setMenuOpen(false) }}>Log out</button>
+              <button type="button" onClick={handleLogout}>Log out</button>
             </div>
           ) : null}
         </div>
