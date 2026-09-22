@@ -228,6 +228,15 @@ export default function MusicPlayer() {
     window.addEventListener('pointerup', onUp)
   }
 
+  const handleProgressKeyDown = (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+    event.preventDefault()
+    const step = Math.max(5, safeDuration * 0.05)
+    const next = Math.max(0, Math.min(safeDuration, progress + (event.key === 'ArrowRight' ? step : -step)))
+    seekTo(next)
+    setSeekPosition(next)
+  }
+
   const handleSkip = (seconds) => {
     skipBy(seconds)
   }
@@ -373,10 +382,14 @@ export default function MusicPlayer() {
         <div className="player-progress-section player-progress-compact">
           <div
             className="player-progress-bar"
-            aria-hidden="true"
             onPointerDown={onDragStart}
             role="button"
             tabIndex={0}
+            aria-label="Seek through track"
+            aria-valuemin={0}
+            aria-valuemax={safeDuration}
+            aria-valuenow={visualProgress}
+            onKeyDown={handleProgressKeyDown}
           >
             <div className="player-progress-filled" style={{ width: `${progressPercent}%` }} />
           </div>
