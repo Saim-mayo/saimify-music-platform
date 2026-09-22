@@ -247,10 +247,6 @@ export default function Search() {
                 ) : trendingError ? (
                   <div className="error-banner">
                     <span>{trendingError}</span>
-                  </div>
-                ) : trendingError ? (
-                  <div className="error-banner">
-                    <span>{trendingError}</span>
                     <button type="button" className="btn btn-ghost btn-compact" onClick={reloadTrending}>Retry</button>
                   </div>
                 ) : trending.length ? (

@@ -54,7 +54,6 @@ export default function MobileNavDrawer({ open, onClose, triggerRef, location, i
       }
     }
 
-    const previousFocus = document.activeElement
     const trigger = triggerRef?.current
     const firstFocusable = dialogRef.current.querySelector('button, a[href]')
     document.addEventListener('keydown', handleKeyDown)
@@ -62,10 +61,7 @@ export default function MobileNavDrawer({ open, onClose, triggerRef, location, i
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      if (previousFocus && typeof previousFocus.focus === 'function') {
-        previousFocus.focus()
-      }
-      if (trigger) {
+      if (trigger && document.contains(trigger) && !trigger.disabled) {
         trigger.focus()
       }
     }

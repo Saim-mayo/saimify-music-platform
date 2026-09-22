@@ -129,6 +129,8 @@ export default function Home() {
             <button
               key={filter}
               type="button"
+              role="tab"
+              tabIndex={selectedFilter === filter ? 0 : -1}
               className={`home-chip${selectedFilter === filter ? ' is-active' : ''}`}
               onClick={() => setSelectedFilter(filter)}
               aria-selected={selectedFilter === filter}
@@ -172,8 +174,6 @@ export default function Home() {
                   className={`home-media-card${openMenuCardId === cardId ? ' menu-open' : ''}${isTrackActive(item) ? ' is-playing' : ''}`}
                   key={cardId}
                   onClick={(event) => handleCardClick(cardId, event)}
-                  role="button"
-                  tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') setOpenMenuCardId(null)
                   }}
@@ -183,23 +183,7 @@ export default function Home() {
                     handlePlay(item)
                   }}>
                     <Artwork item={item} size="large" className="home-media-art" />
-                    <span
-                      className="playlist-card-action"
-                      role="button"
-                      tabIndex={0}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        handlePlay(item)
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          handlePlay(item)
-                        }
-                      }}
-                    >
+                    <span className="playlist-card-action" aria-hidden="true">
                       {isTrackActivePlaying(item) ? '⏸' : '▶'}
                     </span>
                     <div className="home-media-copy">

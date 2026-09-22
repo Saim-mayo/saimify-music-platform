@@ -481,7 +481,7 @@ img, svg, video { max-width: 100%; height: auto; }
 
   .player-volume-controls { display: none; }
   .player-controls .btn { min-width: 34px; padding: 6px 7px; font-size: 0.78rem; }
-  .player-progress { display: none; }
+  .player-progress { display: flex; min-width: 0; width: 100%; gap: 4px; }
   .player-track-copy { gap: 1px; }
   .player-track-copy strong { font-size: 0.88rem; }
   .player-track-copy span { font-size: 0.72rem; }
@@ -1443,10 +1443,10 @@ p { color: var(--muted); }
     pointer-events: auto;
   }
   .home-media-card-menu-wrap .overflow-menu-button {
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
-    min-height: 14px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     padding: 0;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.36);
@@ -1503,10 +1503,10 @@ p { color: var(--muted); }
     pointer-events: auto;
   }
   .home-media-card-menu-wrap .overflow-menu-button {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
-    min-height: 16px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
   }
   .home-media-card-menu-wrap .overflow-menu-button .icon,
   .home-media-card-menu-wrap .overflow-menu-button .icon svg {
@@ -1640,6 +1640,7 @@ p { color: var(--muted); }
 .track-copy small { color: var(--muted); }
 .track-more { padding: 8px; color: var(--muted); letter-spacing: 2px; }
 @media (max-width: 480px) {
+  .toast { bottom: calc(160px + env(safe-area-inset-bottom)); }
   .track-row { align-items: flex-start; }
   .track-row-actions { flex-wrap: wrap; justify-content: end; }
   .track-row .track-main { flex: 1 1 auto; min-width: 0; }
@@ -2648,7 +2649,9 @@ p { color: var(--muted); }
   }
   .player-progress input[type='range'] {
     flex: 1;
-    height: 4px;
+    min-width: 0;
+    min-height: 20px;
+    height: 20px;
   }
   .player-times {
     font-size: 0.65rem;

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNotificationStore } from '@/store'
 import { Skeleton } from '@/components/common'
 
@@ -15,6 +15,16 @@ export default function NotificationsPage() {
     page,
     totalPages,
   } = useNotificationStore()
+  const [actionKey, setActionKey] = useState('')
+
+  const runAction = async (key, action) => {
+    setActionKey(key)
+    try {
+      await action()
+    } finally {
+      setActionKey('')
+    }
+  }
 
   useEffect(() => {
     refresh().catch(() => {})
@@ -30,10 +40,10 @@ export default function NotificationsPage() {
         <button
           type="button"
           className="btn btn-ghost btn-compact"
-          onClick={() => markAllAsRead().catch(() => {})}
-          disabled={!unreadCount}
+          onClick={() => runAction('all', markAllAsRead).catch(() => {})}
+          disabled={!unreadCount || actionKey === 'all'}
         >
-          Mark all as read
+          {actionKey === 'all' ? 'Updating…' : 'Mark all as read'}
         </button>
       </section>
 
@@ -64,8 +74,8 @@ export default function NotificationsPage() {
               </div>
               <div className="notification-row-actions">
                 {!item.read ? (
-                  <button type="button" className="text-link-button" onClick={() => markAsRead(item._id).catch(() => {})}>
-                    Mark read
+                    <button type="button" className="text-link-button" onClick={() => runAction(item._id, () => markAsRead(item._id)).catch(() => {})} disabled={actionKey === item._id}>
+                    {actionKey === item._id ? 'Updating…' : 'Mark read'}
                   </button>
                 ) : null}
               </div>

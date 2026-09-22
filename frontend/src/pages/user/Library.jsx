@@ -58,7 +58,7 @@ export default function Library() {
       ? playlists.filter((playlist) => String(playlist?.title || '').toLowerCase().includes(playlistSearchQuery.trim().toLowerCase()))
       : playlists
     const list = [...filtered]
-    if (sortBy === 'alphabetical') {
+    if (sortBy === 'alpha') {
       return list.sort((a, b) => String(a?.title || '').localeCompare(String(b?.title || '')))
     }
     return list.sort((a, b) => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 
 export default function ConfirmAction({
   open = false,
@@ -13,6 +13,7 @@ export default function ConfirmAction({
   cancelClassName = 'btn btn-ghost btn-compact',
 }) {
   const cancelRef = useRef(null)
+  const titleId = useId()
 
   useEffect(() => {
     if (!open) return undefined
@@ -39,8 +40,8 @@ export default function ConfirmAction({
   const body = message || `Delete “${title || 'this item'}”?`
 
   return (
-    <section className={`confirm-action ${className}`.trim()} role="dialog" aria-modal="true" aria-labelledby="confirm-action-title">
-      <span id="confirm-action-title">{body}</span>
+    <section className={`confirm-action ${className}`.trim()} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <span id={titleId}>{body}</span>
       <div className="row-actions">
         <button type="button" ref={cancelRef} className={cancelClassName} onClick={onCancel}>{cancelText}</button>
         <button type="button" className={confirmClassName} onClick={onConfirm}>{confirmText}</button>
