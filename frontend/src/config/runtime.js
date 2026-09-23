@@ -15,6 +15,7 @@ export const runtime = Object.freeze({
   apiOrigin,
   oauthBaseUrl,
   creatorCvUrl: import.meta.env?.VITE_CREATOR_CV_URL || 'https://github.com/Saim-mayo',
+  creatorProfileUrl: import.meta.env?.VITE_CREATOR_PROFILE_URL || import.meta.env?.VITE_CREATOR_CV_URL || 'https://github.com/Saim-mayo',
   accessTokenExpiresMs: envNumber('VITE_ACCESS_TOKEN_EXPIRES_MS', 15 * 60 * 1000),
   accessTokenRefreshLeadMs: envNumber('VITE_ACCESS_TOKEN_REFRESH_LEAD_MS', 2 * 60 * 1000),
   minimumRefreshDelayMs: envNumber('VITE_MINIMUM_REFRESH_DELAY_MS', 30 * 1000),

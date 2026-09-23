@@ -165,6 +165,31 @@ export const usePlayerStore = create((set, get) => ({
     }
   },
 
+  resetPlayback() {
+    const audio = get().audioElement
+    try {
+      audio?.pause()
+      if (audio) {
+        audio.removeAttribute('src')
+        audio.load()
+      }
+    } catch {
+      // Ignore browser cleanup errors during logout.
+    }
+    set({
+      currentTrack: null,
+      queue: [],
+      currentIndex: 0,
+      isPlaying: false,
+      progress: 0,
+      duration: 0,
+      isQueueOpen: false,
+      loadingQueue: false,
+      error: '',
+      playbackContext: null,
+    })
+  },
+
   setUserSeeking(flag) {
     const next = Boolean(flag)
     set({ isUserSeeking: next })

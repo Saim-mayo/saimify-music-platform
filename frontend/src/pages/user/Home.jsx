@@ -114,12 +114,30 @@ export default function Home() {
   return (
     <div className="content-shell home-shell">
       <section className="hero-panel home-hero">
-        <div>
+        <div className="home-hero-copy">
           <div className="home-hero-topline">
             <span className="section-kicker">{greeting}</span>
+            <span className="home-hero-badge">Daily mix</span>
           </div>
           <h1>Find your next favorite track.</h1>
           <p>Fresh picks, recent listens, and new favorites in one seamless home view.</p>
+          <div className="home-hero-actions">
+            <button type="button" className="btn btn-primary" onClick={() => navigate('/search')}>Explore now</button>
+            <button type="button" className="btn btn-ghost" onClick={() => navigate('/library')}>Your library</button>
+          </div>
+        </div>
+
+        <div className="home-hero-visual" aria-hidden="true">
+          <div className="home-hero-card home-hero-card--main">
+            <span className="home-mini-label">For you</span>
+            <strong>Night Shift</strong>
+            <small>Lo-fi and low light.</small>
+          </div>
+          <div className="home-hero-card home-hero-card--small">
+            <span className="home-mini-label">Trending</span>
+            <strong>3.4k</strong>
+            <small>listens today</small>
+          </div>
         </div>
       </section>
 
@@ -243,8 +261,6 @@ export default function Home() {
                   className={`home-media-card${openMenuCardId === cardId ? ' menu-open' : ''}${isTrackActive(album) ? ' is-playing' : ''}`}
                   key={cardId}
                   onClick={(event) => handleCardClick(cardId, event)}
-                  role="button"
-                  tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') setOpenMenuCardId(null)
                   }}
@@ -254,25 +270,7 @@ export default function Home() {
                     handleOpenAlbum(album)
                   }}>
                     <Artwork item={album} size="large" className="home-media-art" />
-                    <span
-                      className="playlist-card-action"
-                      role="button"
-                      tabIndex={0}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        handleOpenAlbum(album)
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          handleOpenAlbum(album)
-                        }
-                      }}
-                    >
-                      ▶
-                    </span>
+                    <span className="playlist-card-action" aria-hidden="true">▶</span>
                     <div className="home-media-copy">
                       <strong>{display.title}</strong>
                       <span>{display.subtitle}</span>
@@ -323,8 +321,6 @@ export default function Home() {
                   className={`home-media-card${openMenuCardId === cardId ? ' menu-open' : ''}${isTrackActive(track) ? ' is-playing' : ''}`}
                   key={cardId}
                   onClick={(event) => handleCardClick(cardId, event)}
-                  role="button"
-                  tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') setOpenMenuCardId(null)
                   }}
@@ -334,22 +330,7 @@ export default function Home() {
                     handlePlay(track)
                   }}>
                     <Artwork item={track} size="large" className="home-media-art" />
-                    <span className="media-card-action playlist-card-action"
-                      role="button"
-                      tabIndex={0}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        handlePlay(track)
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          handlePlay(track)
-                        }
-                      }}
-                    >
+                    <span className="media-card-action playlist-card-action" aria-hidden="true">
                       {isTrackActivePlaying(track) ? '⏸' : '▶'}
                     </span>
                     <div className="home-media-copy">

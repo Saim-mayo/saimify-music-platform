@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useSubscriptionStore } from '@/store'
 import { Skeleton } from '@/components/common'
 
 const INTERVALS = ['monthly', 'yearly']
 
 const BillingPage = () => {
+  const [searchParams] = useSearchParams()
   // Subscription store (zustand)
   const store = useSubscriptionStore()
   const {
@@ -45,6 +47,21 @@ const BillingPage = () => {
       setError('')
       try {
         await Promise.all([loadPlans?.(), loadSubscriptionStatus?.(), loadHistory?.()])
+
+        if (searchParams.get('checkout') === 'success') {
+          setMessage('Payment received. Syncing your subscription…')
+
+          for (let attempt = 0; attempt < 5; attempt += 1) {
+            const result = await loadSubscriptionStatus?.()
+            const status = result?.subscriptionData?.subscription?.status
+            if (status === 'active' || status === 'trialing') break
+            await new Promise((resolve) => window.setTimeout(resolve, 1000))
+          }
+
+          await loadHistory?.()
+          window.history.replaceState({}, '', window.location.pathname)
+          setMessage('Payment received. Your subscription is now active.')
+        }
       } catch (err) {
         if (!mounted) return
         setError(err?.response?.data?.message || 'Unable to load billing data.')
@@ -52,7 +69,7 @@ const BillingPage = () => {
     }
     init()
     return () => { mounted = false }
-  }, [loadPlans, loadSubscriptionStatus, loadHistory])
+  }, [loadPlans, loadSubscriptionStatus, loadHistory, searchParams])
 
   /* Helpers */
   const formatAmount = (amount, currency) => {

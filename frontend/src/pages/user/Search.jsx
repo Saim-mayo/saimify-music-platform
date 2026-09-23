@@ -186,7 +186,19 @@ export default function Search() {
 
         <label className="search-box search-box--hero search-box--wide">
           <span aria-hidden="true">⌕</span>
-          <input ref={heroInputRef} value={q} onChange={handleQueryChange} placeholder="What do you want to listen to?" aria-label="Search songs and artists" />
+          <input
+            ref={heroInputRef}
+            value={q}
+            onChange={handleQueryChange}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                handleSearchSelect(q, selectedGenre)
+              }
+            }}
+            placeholder="What do you want to listen to?"
+            aria-label="Search songs and artists"
+          />
           {q ? (
             <button type="button" className="icon-button search-clear-button" aria-label="Clear search" onClick={handleClearSearch}>
               ×
@@ -400,7 +412,7 @@ export default function Search() {
                       </div>
                     </div>
                   </article>
-                )) : <p className="subtitle">No artists found.</p>}
+                )) : <div className="home-empty-state"><p>No artists found. Try another name or search term.</p></div>}
               </div>
             </>
           ) : null}

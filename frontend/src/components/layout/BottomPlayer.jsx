@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { usePlayerStore } from '@/store'
+import { useAuthStore, usePlayerStore } from '@/store'
 import { showToast, dispatchErrorToast } from '@/utils/toast'
 import { Artwork, Icon } from '@/components/ui'
 import useSongActions from '@/features/user/useSongActions'
@@ -12,6 +12,7 @@ export default function BottomPlayer() {
   const prevTrackIdRef = useRef(null)
   const location = useLocation()
   const navigate = useNavigate()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const [isSeeking, setIsSeeking] = useState(false)
   const [seekPosition, setSeekPosition] = useState(0)
   const {
@@ -48,8 +49,9 @@ export default function BottomPlayer() {
   }, [registerAudioElement])
 
   useEffect(() => {
+    if (!isAuthenticated) return
     refreshQueue().catch(() => {})
-  }, [refreshQueue])
+  }, [isAuthenticated, refreshQueue])
 
   useEffect(() => {
     const trackId = currentTrack?._id
@@ -89,6 +91,7 @@ export default function BottomPlayer() {
     if (isPlaying) {
       // Just call play - don't check audio.src since it might be empty initially
       audio.play().catch(err => {
+        if (err?.name === 'AbortError') return
         console.error('[BottomPlayer] Play error:', err)
       })
     } else {

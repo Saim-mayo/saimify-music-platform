@@ -25,7 +25,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [avatarFailed, setAvatarFailed] = useState(false)
   const menuRef = useRef(null)
-  const isInnerPage = isInnerPagePath(location.pathname)
+  const isInnerPage = isInnerPagePath(location.pathname) && location.pathname !== '/home'
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -115,7 +115,7 @@ export default function Navbar() {
     <header className="topbar">
       <div className="topbar-left">
         {isInnerPage ? (
-          <div className="topbar-left-inner" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="topbar-left-inner">
             <button type="button" className={`icon-button${canGoBack ? '' : ' is-disabled'}`} onClick={handleBack} aria-label="Go back" disabled={!canGoBack}>
               <Icon name="back" />
             </button>

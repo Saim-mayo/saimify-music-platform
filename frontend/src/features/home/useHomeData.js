@@ -6,6 +6,27 @@ export default function useHomeData() {
   const [status, setStatus] = useState({ history: 'loading', albums: 'loading', trending: 'loading' })
   const [errors, setErrors] = useState({ history: '', albums: '', trending: '' })
 
+  const loadHistory = useCallback(async () => {
+    setStatus((current) => ({ ...current, history: 'loading' }))
+    setErrors((current) => ({ ...current, history: '' }))
+
+    try {
+      const historyResult = await getHistory()
+      setData((current) => ({
+        ...current,
+        history: unwrapCollection(historyResult, ['history']).map((entry) => entry?.song || entry),
+      }))
+      setErrors((current) => ({ ...current, history: '' }))
+      setStatus((current) => ({ ...current, history: 'success' }))
+    } catch (error) {
+      setErrors((current) => ({
+        ...current,
+        history: getApiErrorMessage(error, 'Unable to load your recent listens.'),
+      }))
+      setStatus((current) => ({ ...current, history: 'error' }))
+    }
+  }, [])
+
   const load = useCallback(async () => {
     setStatus({ history: 'loading', albums: 'loading', trending: 'loading' })
     setErrors({ history: '', albums: '', trending: '' })
@@ -42,7 +63,14 @@ export default function useHomeData() {
 
   useEffect(() => {
     void load()
-  }, [load])
+
+    const handleHistoryRefresh = () => {
+      void loadHistory()
+    }
+
+    window.addEventListener('history:refresh', handleHistoryRefresh)
+    return () => window.removeEventListener('history:refresh', handleHistoryRefresh)
+  }, [load, loadHistory])
 
   return {
     ...data,

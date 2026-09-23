@@ -10,7 +10,7 @@ import { usePlaylistsList } from '@/features/user/usePlaylistsList'
 export default function Sidebar() {
   const { sidebarItems, accountItems, isAuthenticated } = useNavItems()
   const { unreadCount, refreshUnreadCount } = useNotificationStore()
-  const { playlists, loading: loadingPlaylists, error: playlistError, total: playlistCount, reload: loadPlaylists } = usePlaylistsList()
+  const { playlists, loading: loadingPlaylists, error: playlistError, total: playlistCount, reload: loadPlaylists } = usePlaylistsList(undefined, isAuthenticated)
 
   useEffect(() => {
     if (isAuthenticated) {

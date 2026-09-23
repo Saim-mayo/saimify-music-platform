@@ -2,13 +2,20 @@ import { useCallback, useEffect, useState } from 'react'
 import { getApiErrorMessage, getUserPlaylists } from '@/api'
 import { pagination } from '@/config/pagination'
 
-export function usePlaylistsList(limit = pagination.sidebarPlaylistPageSize) {
+export function usePlaylistsList(limit = pagination.sidebarPlaylistPageSize, enabled = true) {
   const [playlists, setPlaylists] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [total, setTotal] = useState(0)
 
   const reload = useCallback(async () => {
+    if (!enabled) {
+      setPlaylists([])
+      setTotal(0)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
@@ -23,7 +30,7 @@ export function usePlaylistsList(limit = pagination.sidebarPlaylistPageSize) {
     } finally {
       setLoading(false)
     }
-  }, [limit])
+  }, [enabled, limit])
 
   useEffect(() => {
     void reload()

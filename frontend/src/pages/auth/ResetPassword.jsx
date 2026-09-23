@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Input, Skeleton } from '@/components/common'
+import { Button, Skeleton } from '@/components/common'
+import { Icon } from '@/components/ui'
 import { extractFieldErrors, getResetPasswordFieldErrors } from '@/utils/authValidation'
 import useAuthActions from '@/features/auth/useAuthActions'
 
@@ -10,6 +11,8 @@ export default function ResetPassword() {
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [errors, setErrors] = useState({})
@@ -58,26 +61,54 @@ export default function ResetPassword() {
         {loading ? <Skeleton className="auth-banner" lines={3} /> : null}
         {!loading ? (
           <>
-            <Input
-              id="reset-password"
-              name="password"
-              autoComplete="new-password"
-              label="New password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              error={errors.password}
-            />
-            <Input
-              id="confirm-password"
-              name="confirmPassword"
-              autoComplete="new-password"
-              label="Confirm password"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              error={errors.confirmPassword}
-            />
+            <div className="field">
+              <span>New password</span>
+              <div className="password-field-shell">
+                <input
+                  id="reset-password"
+                  name="password"
+                  autoComplete="new-password"
+                  className={`input ${errors.password ? 'input-error' : ''}`}
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label="Toggle password visibility"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
+                </button>
+              </div>
+              {errors.password ? <small className="error-text">{errors.password}</small> : null}
+            </div>
+            <div className="field">
+              <span>Confirm password</span>
+              <div className="password-field-shell">
+                <input
+                  id="confirm-password"
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                  aria-label="Toggle password visibility"
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Icon name={showConfirmPassword ? 'eyeOff' : 'eye'} size={16} />
+                </button>
+              </div>
+              {errors.confirmPassword ? <small className="error-text">{errors.confirmPassword}</small> : null}
+            </div>
             {errors.general ? <div className="auth-banner auth-banner-error"><p style={{ marginBottom: 0 }}>{errors.general}</p></div> : null}
             {message ? <div className="auth-banner auth-banner-success"><p style={{ marginBottom: 0 }}>{message}</p></div> : null}
             <Button type="submit" disabled={loading}>{loading ? 'Updating…' : 'Reset password'}</Button>

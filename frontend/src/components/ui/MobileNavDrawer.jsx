@@ -70,6 +70,17 @@ export default function MobileNavDrawer({ open, onClose, triggerRef, location, i
   useEffect(() => {
     if (!open) return undefined
 
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return undefined
+
     if (previousPathRef.current !== location.pathname) {
       onClose()
     }
@@ -103,13 +114,23 @@ export default function MobileNavDrawer({ open, onClose, triggerRef, location, i
           <button type="button" className="icon-button mobile-nav-sheet-close" onClick={onClose} aria-label="Close more navigation options">×</button>
         </div>
         <div className="mobile-nav-sheet-list">
-          {items.map((item) => (
-            <NavLink key={item.to} to={item.to} className="mobile-nav-sheet-link" onClick={onClose}>
-              <Icon name={item.icon} className="sidebar-icon" size={18} />
-              <span>{item.label}</span>
-              <span aria-hidden="true">↗</span>
-            </NavLink>
-          ))}
+          {items.map((item) => {
+            const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={() => `mobile-nav-sheet-link${isActive ? ' is-active' : ''}`}
+                onClick={onClose}
+              >
+                <span className="mobile-nav-sheet-link-main">
+                  <Icon name={item.icon} className="sidebar-icon" size={18} />
+                  <span>{item.label}</span>
+                </span>
+                <span aria-hidden="true">↗</span>
+              </NavLink>
+            )
+          })}
         </div>
       </div>
     </div>

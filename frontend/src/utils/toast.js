@@ -6,6 +6,7 @@ export const showToast = ({ message, tone = 'info', actionLabel = null, action =
 }
 
 export const dispatchErrorToast = (error, fallbackMessage = 'Something went wrong.') => {
+  if (error?.response?.status === 401) return
   const message = error?.response?.data?.message || error?.message || fallbackMessage
   const tone = 'error'
   const detail = { message, tone }

@@ -216,7 +216,10 @@ export default function Library() {
                     <option value="alpha">A → Z</option>
                   </select>
                 </label>
-                <button type="button" className="btn btn-ghost" onClick={() => setPlaylistSearchQuery('')}>
+                <button type="button" className="btn btn-ghost" onClick={() => {
+                  setPlaylistSearchQuery('')
+                  setSortBy('recent')
+                }}>
                   Clear filters
                 </button>
               </div>
@@ -228,13 +231,18 @@ export default function Library() {
                 <button type="submit" className="btn btn-primary">Create playlist</button>
               </div>
               <div className="library-create-row library-create-file-row">
-                <label htmlFor="playlist-cover-input" className="field library-field-inline">
-                  <span>Cover image</span>
+                <label htmlFor="playlist-cover-input" className="field library-cover-field">
+                  <span className="library-cover-label">Cover image</span>
+                  <span className="library-cover-control">
+                    <span className="library-cover-button">Choose cover</span>
+                    <span className="library-cover-name">{playlistCover?.name || 'No image selected'}</span>
+                  </span>
                   <input
                     id="playlist-cover-input"
-                    className="input"
+                    className="library-cover-input"
                     type="file"
                     accept="image/*"
+                    aria-label="Choose playlist cover image"
                     onChange={(event) => setPlaylistCover(event.target.files?.[0] || null)}
                   />
                 </label>
@@ -335,15 +343,15 @@ export default function Library() {
                         handlePlaySong(song, index)
                       }}
                       trailing={(
-                        <div className="track-row-actions">
-                          {/* single inline play control + compact picker */}
-                          <button type="button" className="btn btn-ghost btn-compact" onClick={(event) => { event.stopPropagation(); if (isActivePlaying) { togglePlay(); } else { handlePlaySong(song, index) } }} aria-label={isActivePlaying ? `Pause ${song?.title || 'track'}` : `Play ${song?.title || 'track'}`}>
+                        <div className="track-row-actions library-catalog-actions">
+                          <button type="button" className="btn btn-ghost btn-compact library-catalog-action" onClick={(event) => { event.stopPropagation(); if (isActivePlaying) { togglePlay(); } else { handlePlaySong(song, index) } }} aria-label={isActivePlaying ? `Pause ${song?.title || 'track'}` : `Play ${song?.title || 'track'}`}>
                             {isActivePlaying ? 'Pause' : 'Play'}
                           </button>
                           <PlaylistPicker
                             songId={songId}
-                            buttonLabel="Add to playlist ▾"
-                            buttonClassName="btn btn-primary btn-compact"
+                            buttonLabel="Add to playlist"
+                            buttonTitle="Add to playlist"
+                            buttonClassName="btn btn-primary btn-compact library-catalog-action"
                             disabled={false}
                             onError={(message) => showToast({ message, tone: 'error' })}
                             onSuccess={(message) => showToast({ message, tone: 'success' })}

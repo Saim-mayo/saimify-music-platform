@@ -1,6 +1,12 @@
 import apiClient from './client'
 import { pagination } from '@/config/pagination'
 
+const emitHistoryRefresh = () => {
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('history:refresh', { detail: { source: 'play' } }))
+  }
+}
+
 export const getAllSongs = async (page = pagination.firstPage, limit = pagination.catalogPageSize) => {
   const { data } = await apiClient.get('/music/all-songs', { params: { page, limit } })
   return data
@@ -45,6 +51,7 @@ export const getTrending = async () => {
 
 export const playSong = async (songId) => {
   const { data } = await apiClient.post(`/music/play/${songId}`)
+  emitHistoryRefresh()
   return data
 }
 

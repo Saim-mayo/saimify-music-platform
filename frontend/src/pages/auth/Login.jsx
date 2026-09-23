@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store'
 import { Button, Input, Skeleton } from '@/components/common'
+import { Icon } from '@/components/ui'
 import { extractFieldErrors, getLoginFieldErrors } from '@/utils/authValidation'
 import { buildOAuthUrl } from '@/config/runtime'
 import { getApiErrorMessage } from '@/api'
@@ -109,7 +110,7 @@ export default function Login() {
             />
             <div className="field">
               <span>Password</span>
-              <div style={{ position: 'relative' }}>
+              <div className="password-field-shell">
                 <input
                   id="password"
                   name="password"
@@ -120,8 +121,14 @@ export default function Login() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   onInput={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                 />
-                <button type="button" className="icon-button" style={{ position: 'absolute', right: 8, top: 8, width: 32, height: 32 }} onClick={() => setShowPassword((value) => !value)} aria-label="Toggle password visibility">
-                  {showPassword ? '🙈' : '👁'}
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label="Toggle password visibility"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Icon name={showPassword ? 'eyeOff' : 'eye'} size={16} />
                 </button>
               </div>
               {errors.password ? <small className="error-text">{errors.password}</small> : null}
